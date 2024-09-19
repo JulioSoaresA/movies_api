@@ -1,3 +1,12 @@
-from django.shortcuts import render
+from movie.models import Filme
+from rest_framework import viewsets, filters
+from .serializers import FilmeSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
-# Create your views here.
+
+class FilmeViewSet(viewsets.ModelViewSet):
+    queryset = Filme.objects.all().order_by('id')
+    serializer_class = FilmeSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['titulo', 'ano_lancamento', 'avaliacao_media']
+    search_fields = ['titulo', 'genero', 'ano_lancamento']
