@@ -8,7 +8,7 @@ import os
 
 # Substitua pela sua chave de API da TMDb
 API_KEY = '8daf33bd13563661f23bd756dfb3e3dd'
-MOVIE_API_URL = f"https://api.themoviedb.org/3/movie/popular?language=en-US&page=1&api_key={API_KEY}"
+MOVIE_API_URL = f"https://api.themoviedb.org/3/movie/popular?language=en&api_key={API_KEY}&page={{page}}"
 GENRE_API_URL = f"https://api.themoviedb.org/3/genre/movie/list?language=en&api_key={API_KEY}"
 MOVIE_DETAILS_URL = f"https://api.themoviedb.org/3/movie/{{movie_id}}?language=en-US&api_key={API_KEY}"
 
@@ -99,9 +99,16 @@ class Command(BaseCommand):
                     )
 
                     if poster:
-                        filme_obj.poster.save(poster_filename, poster)
+                        try:
+                            filme_obj.poster.save(poster_filename, poster)
+                        except Exception as e:
+                            self.stdout.write(self.style.ERROR(f'Erro ao salvar o poster: {e}'))
 
-                    filme_obj.save()
+                    # Verificar se o filme já existe no banco de dados antes de salvar
+                    if not Filme.objects.filter(titulo=titulo, ano_lancamento=ano_lancamento).exists():
+                        filme_obj.save()
+                    else:
+                        self.stdout.write(self.style.WARNING(f'O filme "{titulo}" já existe no banco de dados.'))
 
                 total_filmes += len(filmes)
                 self.stdout.write(self.style.SUCCESS(f'Página {page} processada com {len(filmes)} filmes.'))
