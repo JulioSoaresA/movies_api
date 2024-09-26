@@ -9,5 +9,10 @@
     "routes": [{
         "src": "/(.*)",
         "dest": "setup/wsgi.py"
-    }]
+    }],
+    "hooks": {
+        "build": {
+            "command": "bash post_install.sh"
+        }
+    }
 }
