@@ -1,7 +1,0 @@
-{
-    "name": "movies_api",
-    "version": "1.0.0",
-    "scripts": {
-        "postinstall": "python manage.py collectstatic --noinput && python manage.py populate_movies"
-    }
-}

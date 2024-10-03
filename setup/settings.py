@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path, os
 import libsql_experimental as libsql
 from dotenv import load_dotenv
+import dj_database_url
+
+load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,12 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z&@i0y@yb@#=9=-w&ti(7jlgm0a=p849y*ht#i%d1qxq)oy%wu'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'movies-api-juliocsoares.fly.dev']
+CSRF_TRUSTED_ORIGINS = ['https://movies-api-juliocsoares.fly.dev']
 
 
 # Application definition
@@ -43,10 +48,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'movie',
+    'whitenoise.runserver_nostatic',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,8 +93,6 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 #     }
 # }
 
-# Carregar as variáveis de ambiente
-load_dotenv()
 
 url = os.getenv("TURSO_DATABASE_URL")
 auth_token = os.getenv("TURSO_AUTH_TOKEN")
@@ -95,10 +100,13 @@ auth_token = os.getenv("TURSO_AUTH_TOKEN")
 
 # Configuração do banco de dados
 DATABASES = {
-    'default': {
-        'ENGINE': 'libsql.db.backends.sqlite3',
-        'NAME': f"{url}?authToken={auth_token}",  # A URL do banco de dados Turso com o token de autenticação
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///' + os.path.join('db.sqlite3')
+    )
+        #{
+        #'ENGINE': 'libsql.db.backends.sqlite3',
+        #'NAME': f"{url}?authToken={auth_token}",  # A URL do banco de dados Turso com o token de autenticação
+    #}
 }
 
 # Password validation
@@ -134,6 +142,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
