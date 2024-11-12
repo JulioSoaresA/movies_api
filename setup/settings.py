@@ -14,6 +14,7 @@ from pathlib import Path, os
 import libsql_experimental as libsql
 from dotenv import load_dotenv
 import dj_database_url
+from datetime import timedelta
 
 load_dotenv()
 
@@ -46,9 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'django_filters',
     'movie',
+    'users',
     'whitenoise.runserver_nostatic',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -96,6 +100,7 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 
 url = os.getenv("TURSO_DATABASE_URL")
 auth_token = os.getenv("TURSO_AUTH_TOKEN")
+# env = os.getenv('ENV', 'local')  # Default para 'local' caso não esteja definido
 
 
 # Configuração do banco de dados
@@ -156,13 +161,29 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',    
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'users.authentication.CookiesJWTAuthentication',    
+    ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.QueryParameterVersioning'
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.QueryParameterVersioning',
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '50/day',
+        'user': '100/day',
+    }
+
+
+
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
